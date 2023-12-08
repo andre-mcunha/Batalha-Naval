@@ -157,7 +157,7 @@ fun tamanhoTabuleiroValido(numLinhas: Int?, numColunas: Int?): Boolean {
 }
 
 
-fun processaCoordenadas(coordenadas: String?, numLinhas: Int, numColunas: Int): Pair<Int,Int>? {
+fun processaCoordenadas(coordenadas: String?, numLinhas: Int, numColunas: Int): Pair<Int, Int>? {
 
 
     if (coordenadas == null || coordenadas.length < 3 || coordenadas.length > 4) {
@@ -174,7 +174,7 @@ fun processaCoordenadas(coordenadas: String?, numLinhas: Int, numColunas: Int): 
             if (linha != null) {
                 return when {
                     linha == 0 -> null
-                    linha <= numLinhas && colunaCode <= numColunas + 64 -> Pair(linha, colunaCode-64)
+                    linha <= numLinhas && colunaCode <= numColunas + 64 -> Pair(linha, colunaCode - 64)
                     else -> {
                         println("""!!! Coordenadas invalidas, tente novamente
                 |Coordenadas? (ex: 6,G)
@@ -190,7 +190,7 @@ fun processaCoordenadas(coordenadas: String?, numLinhas: Int, numColunas: Int): 
 
             return when {
                 linha == 0 -> null
-                linha <= numLinhas && colunaCode <= numColunas + 64 -> Pair(linha, colunaCode-64)
+                linha <= numLinhas && colunaCode <= numColunas + 64 -> Pair(linha, colunaCode - 64)
                 else -> null
             }
         }
@@ -242,14 +242,13 @@ fun criaTerreno(numLinhas: Int, numColunas: Int): String {
 
 
 fun calculaNumNavios(numLinhas: Int, numColunas: Int): Array<Int> {
-    var numNavios = Array(4){0}
 
-    numNavios = when {
-        numLinhas == 4 && numColunas == 4 -> arrayOf(2,0,0,0)
-        numLinhas == 5 && numColunas == 5 -> arrayOf(1,1,1,0)
-        numLinhas == 7 && numColunas == 7 -> arrayOf(2,1,1,1)
-        numLinhas == 8 && numColunas == 8 -> arrayOf(2,2,1,1)
-        numLinhas == 10 && numColunas == 10 -> arrayOf(3,2,1,1)
+    val numNavios: Array<Int> = when {
+        numLinhas == 4 && numColunas == 4 -> arrayOf(2, 0, 0, 0)
+        numLinhas == 5 && numColunas == 5 -> arrayOf(1, 1, 1, 0)
+        numLinhas == 7 && numColunas == 7 -> arrayOf(2, 1, 1, 1)
+        numLinhas == 8 && numColunas == 8 -> arrayOf(2, 2, 1, 1)
+        numLinhas == 10 && numColunas == 10 -> arrayOf(3, 2, 1, 1)
         else -> emptyArray()
 
     }
@@ -263,22 +262,20 @@ fun criaTabuleiroVazio(numLinhas: Int, numColunas: Int): Array<Array<Char?>> {
 
 
 fun coordenadaContida(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean {
-   return when {
-       linha == 0 || coluna == 0 -> false
-       linha > tabuleiro.size -> false
-       linha == tabuleiro.size && coluna <= tabuleiro[linha-1].size -> true
-        linha <= tabuleiro.size && coluna <= tabuleiro[linha].size  -> true
-       else -> false
+    return when {
+        linha <= 0 || coluna <= 0 -> false
+        linha <= tabuleiro.size && coluna <= tabuleiro[linha].size -> true
+        else -> false
     }
     //a linha e a coluna começam em 1
 
 }
 
 fun limparCoordenadasVazias(coordenadas: Array<Pair<Int, Int>>): Array<Pair<Int, Int>> {
-    var coordenadasLimpas = emptyArray<Pair<Int,Int>>()
+    var coordenadasLimpas = emptyArray<Pair<Int, Int>>()
 
     for (coordenada in coordenadas)
-        if (coordenada != Pair(0,0)) {
+        if (coordenada != Pair(0, 0)) {
             coordenadasLimpas += coordenada
         }
     return coordenadasLimpas
@@ -299,10 +296,52 @@ fun gerarCoordenadasNavio(tabuleiro: Array<Array<Char?>>,
                           linha: Int,
                           coluna: Int,
                           orientacao: String,
-                          dimensao: Int): Array<Array<Pair<String, Int>>> {
+                          dimensao: Int): Array<Pair<Int, Int>> {
 
-    return emptyArray()
+    var coordenadasNavio = emptyArray<Pair<Int, Int>>()
+
+    if (linha != 0 && coluna != 0) {
+        when (orientacao) {
+            "E" -> for (posicao in coluna - 1..coluna + 2) {
+                if (coordenadaContida(tabuleiro, linha, posicao + 1)) {
+                    coordenadasNavio += Pair(linha, posicao + 1)
+                }
+            }
+
+            "N" -> for (posicao in linha - 1 downTo linha - 4) {
+                if (coordenadaContida(tabuleiro, posicao + 1, coluna)) {
+                    coordenadasNavio += Pair(posicao + 1, coluna)
+                }
+            }
+
+            "O" -> for (posicao in coluna - 1 downTo coluna - 4) {
+                if (coordenadaContida(tabuleiro, linha, posicao + 1)) {
+                    coordenadasNavio += Pair(linha, posicao + 1)
+                }
+            }
+
+            "S" -> {
+                for (posicao in linha - 1..linha + 2) {
+                    if (coordenadaContida(tabuleiro, posicao+1, coluna)) {
+                        coordenadasNavio += Pair(linha, posicao + 1)
+                    }
+                }
+            }
+        }
+    }else return emptyArray()
+    return when {
+        coordenadasNavio.size >= dimensao -> coordenadasNavio
+        else -> emptyArray()
+    }
 }
+
+//  | 0 | 1 | 2 | 3 | Fazer um ciclo que verifique as posicoes todas e coloque no array se e válida ou não
+// e depois verificamos a ultima posicao em relacao á dimensao do navio
+// 0| P | P | N | N
+//E-linha+1
+//N=linha-1
+//O=coluna-1
+//S=linha +1
 
 fun gerarCoordenadasFronteira(tabuleiro: Array<Array<Char?>>,
                               linha: Int,
@@ -352,7 +391,7 @@ fun lancarTiro(tabuleiroRealComputador: Array<Array<Char?>>,
 }
 
 fun geraTiroComputador(tabuleiroPalpitesComputador: Array<Array<Char?>>): Pair<Int, Int> {
-    return Pair(0,0)
+    return Pair(0, 0)
 }
 
 fun contarNaviosDeDimensao(tabuleiro: Array<Array<Char?>>, dimensao: Int): Int {
@@ -389,5 +428,4 @@ fun main() {
             else -> return
         }
     }
-
 }
