@@ -107,20 +107,22 @@ fun menuDefinirTabuleiro(): Int {
     do {
         orientacao = readlnOrNull()
         if (orientacao != null && orientacao != "") {
-            if (orientacao.toIntOrNull() == -1) return MENU_PRINCIPAL
-            if (orientacao.toIntOrNull() == 0) return SAIR
-        }
-        when (orientacao) {
-            "N", "S", "E", "O" -> return MENU_PRINCIPAL
-            else -> {
-                orientacao = null
-                println("""!!! Orientacao invalida, tente novamente
+            when {
+                orientacao.toIntOrNull() == -1 -> return MENU_PRINCIPAL
+                orientacao.toIntOrNull() == 0 -> return SAIR
+                orientacao == "N" ||orientacao == "S" || orientacao == "E" || orientacao == "O" ->
+                    return MENU_PRINCIPAL
+
+                }
+            }else  {
+            orientacao = null
+            println("""!!! Orientacao invalida, tente novamente
                 |Orientacao? (N, S, E, O)
             """.trimMargin())
-            }
         }
-    } while (orientacao == null)
-    return SAIR
+
+    }while (orientacao == null)
+    return MENU_PRINCIPAL
 }
 
 
@@ -298,50 +300,51 @@ fun gerarCoordenadasNavio(tabuleiro: Array<Array<Char?>>,
                           orientacao: String,
                           dimensao: Int): Array<Pair<Int, Int>> {
 
-    var coordenadasNavio = emptyArray<Pair<Int, Int>>()
+    var possiveisCoordenadasNavio = emptyArray<Pair<Int, Int>>()
 
     if (linha != 0 && coluna != 0) {
         when (orientacao) {
             "E" -> for (posicao in coluna - 1..coluna + 2) {
                 if (coordenadaContida(tabuleiro, linha, posicao + 1)) {
-                    coordenadasNavio += Pair(linha, posicao + 1)
+                    possiveisCoordenadasNavio += Pair(linha, posicao + 1)
                 }
             }
 
             "N" -> for (posicao in linha - 1 downTo linha - 4) {
                 if (coordenadaContida(tabuleiro, posicao + 1, coluna)) {
-                    coordenadasNavio += Pair(posicao + 1, coluna)
+                    possiveisCoordenadasNavio += Pair(posicao + 1, coluna)
                 }
             }
 
             "O" -> for (posicao in coluna - 1 downTo coluna - 4) {
                 if (coordenadaContida(tabuleiro, linha, posicao + 1)) {
-                    coordenadasNavio += Pair(linha, posicao + 1)
+                    possiveisCoordenadasNavio += Pair(linha, posicao + 1)
                 }
             }
 
             "S" -> {
                 for (posicao in linha - 1..linha + 2) {
-                    if (coordenadaContida(tabuleiro, posicao+1, coluna)) {
-                        coordenadasNavio += Pair(linha, posicao + 1)
+                    if (coordenadaContida(tabuleiro, posicao + 1, coluna)) {
+                        possiveisCoordenadasNavio += Pair(linha, posicao + 1)
                     }
                 }
             }
         }
-    }else return emptyArray()
-    return when {
-        coordenadasNavio.size >= dimensao -> coordenadasNavio
-        else -> emptyArray()
-    }
-}
+    } else return emptyArray()
 
-//  | 0 | 1 | 2 | 3 | Fazer um ciclo que verifique as posicoes todas e coloque no array se e válida ou não
-// e depois verificamos a ultima posicao em relacao á dimensao do navio
-// 0| P | P | N | N
-//E-linha+1
-//N=linha-1
-//O=coluna-1
-//S=linha +1
+    var coordenadasNavio = emptyArray<Pair<Int, Int>>()
+
+    when {
+        possiveisCoordenadasNavio.size < dimensao -> return coordenadasNavio
+        possiveisCoordenadasNavio.isEmpty() -> return coordenadasNavio
+        else -> {
+            for (posicao in 0 until dimensao)
+                coordenadasNavio += possiveisCoordenadasNavio[posicao]
+        }
+
+    }
+    return coordenadasNavio
+}
 
 fun gerarCoordenadasFronteira(tabuleiro: Array<Array<Char?>>,
                               linha: Int,
