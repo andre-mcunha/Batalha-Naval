@@ -110,18 +110,18 @@ fun menuDefinirTabuleiro(): Int {
             when {
                 orientacao.toIntOrNull() == -1 -> return MENU_PRINCIPAL
                 orientacao.toIntOrNull() == 0 -> return SAIR
-                orientacao == "N" ||orientacao == "S" || orientacao == "E" || orientacao == "O" ->
+                orientacao == "N" || orientacao == "S" || orientacao == "E" || orientacao == "O" ->
                     return MENU_PRINCIPAL
 
-                }
-            }else  {
+            }
+        } else {
             orientacao = null
             println("""!!! Orientacao invalida, tente novamente
                 |Orientacao? (N, S, E, O)
             """.trimMargin())
         }
 
-    }while (orientacao == null)
+    } while (orientacao == null)
     return MENU_PRINCIPAL
 }
 
@@ -289,7 +289,6 @@ fun juntarCoordenadas(coordenadas: Array<Pair<Int, Int>>, coordenadas2: Array<Pa
 
     for (coordenada in coordenadas2)
         coordenadasJuntas += coordenada
-    //podemos assumir que as coordenadas não são (0,0)
 
     return coordenadasJuntas
 }
@@ -299,7 +298,7 @@ fun gerarCoordenadasNavio(tabuleiro: Array<Array<Char?>>,
                           coluna: Int,
                           orientacao: String,
                           dimensao: Int): Array<Pair<Int, Int>> {
-
+    var coordenadasNavio = emptyArray<Pair<Int, Int>>()
     var possiveisCoordenadasNavio = emptyArray<Pair<Int, Int>>()
 
     if (linha != 0 && coluna != 0) {
@@ -330,9 +329,9 @@ fun gerarCoordenadasNavio(tabuleiro: Array<Array<Char?>>,
                 }
             }
         }
-    } else return emptyArray()
+    } else return coordenadasNavio
 
-    var coordenadasNavio = emptyArray<Pair<Int, Int>>()
+
 
     when {
         possiveisCoordenadasNavio.size < dimensao -> return coordenadasNavio
@@ -350,14 +349,47 @@ fun gerarCoordenadasFronteira(tabuleiro: Array<Array<Char?>>,
                               linha: Int,
                               coluna: Int,
                               orientacao: String,
-                              dimensao: Int): Array<Array<Pair<Int, Int>>> {
+                              dimensao: Int): Array<Pair<Int, Int>> {
 
-    return emptyArray()
+    var coordenadasFronteira: Array<Pair<Int, Int>> = emptyArray()
+
+    val coordenadasNavio = gerarCoordenadasNavio(tabuleiro, linha, coluna, orientacao, dimensao)
+
+
+    for (coordenadas in coordenadasNavio) {
+        val linhaNavioNaMatriz = coordenadas.first - 1
+        val colunaNavioNaMatriz = coordenadas.second - 1
+        for (posicaoLinha in linhaNavioNaMatriz - 1..linhaNavioNaMatriz + 1) {
+            for (posicaoColuna in colunaNavioNaMatriz - 1..colunaNavioNaMatriz + 1) {
+
+                if (coordenadaContida(tabuleiro, posicaoLinha, posicaoColuna)) {
+
+                    if (
+                            (Pair(posicaoLinha + 1, posicaoColuna + 1) !in coordenadasNavio) &&
+                            (Pair(posicaoLinha + 1, posicaoColuna + 1) !in coordenadasFronteira)
+                    ) {
+                        coordenadasFronteira += Pair(posicaoLinha, posicaoColuna)
+
+
+                    }
+                }
+
+            }
+
+        }
+
+
+    }
+    return coordenadasFronteira
 }
 
 
 fun estaLivre(tabuleiro: Array<Array<Char?>>, conjuntoDeCoordenadas: Array<Pair<Int, Int>>): Boolean {
-    return false
+    for (coordenada in conjuntoDeCoordenadas)
+        if (tabuleiro[coordenada.first - 1][coordenada.second - 1] != null) return false
+
+
+    return true
 }
 
 fun insereNavioSimples(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, dimensao: Int): Boolean {
