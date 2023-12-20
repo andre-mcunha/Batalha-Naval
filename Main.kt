@@ -298,6 +298,7 @@ fun gerarCoordenadasNavio(tabuleiro: Array<Array<Char?>>,
                           coluna: Int,
                           orientacao: String,
                           dimensao: Int): Array<Pair<Int, Int>> {
+
     var coordenadasNavio = emptyArray<Pair<Int, Int>>()
     var possiveisCoordenadasNavio = emptyArray<Pair<Int, Int>>()
 
@@ -394,22 +395,77 @@ fun estaLivre(tabuleiro: Array<Array<Char?>>, conjuntoDeCoordenadas: Array<Pair<
 
 fun insereNavioSimples(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, dimensao: Int): Boolean {
     //assume sempre orientação Este
+
+    val coordenadasNavio = gerarCoordenadasNavio(tabuleiro, linha, coluna, "E", dimensao)
+    val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiro, linha, coluna, "E", dimensao)
+    val coordenadasNavioEFronteira = juntarCoordenadas(coordenadasNavio, coordenadasFronteira)
+
+    if (estaLivre(tabuleiro, coordenadasNavioEFronteira)) {
+        for (coordenada in coordenadasNavio)
+            tabuleiro[coordenada.first - 1][coordenada.second - 1] = dimensao.toChar()
+        return true
+    }
+
     return false
+
 }
 
 
 fun insereNavio(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, orientacao: String, dimensao: Int): Boolean {
     //quando receber a orientaçao E usar a fun inserirNavioSimples
+
+
+    val coordenadasNavio = gerarCoordenadasNavio(tabuleiro, linha, coluna, orientacao, dimensao)
+    val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiro, linha, coluna, orientacao, dimensao)
+    val coordenadasNavioEFronteira = juntarCoordenadas(coordenadasNavio, coordenadasFronteira)
+
+    if (estaLivre(tabuleiro, coordenadasNavioEFronteira)) {
+        for (coordenada in coordenadasNavio)
+            tabuleiro[coordenada.first - 1][coordenada.second - 1] = dimensao.toChar()
+        return true
+    }
+
     return false
+
 }
 
 
 fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: Array<Int>): Array<Array<Char?>> {
-    return arrayOf(arrayOf(null))
+
+
+    for (posicao in 0 until numeroDeNavios.size) {
+        for (count in 1..numeroDeNavios[posicao]) {
+            do {
+
+                val linhaAleatoria = (0 until tabuleiroComputador.size).random()
+                val colunaAleatoria = (0 until tabuleiroComputador[linhaAleatoria].size).random()
+                val orientacaoAleatoria = arrayOf("E", "N", "S", "O").random()
+
+
+                val controlo = insereNavio(tabuleiroComputador,
+                        linhaAleatoria,
+                        colunaAleatoria,
+                        orientacaoAleatoria,
+                        posicao + 1)
+
+            } while (!controlo)
+
+        }
+    }
+    return tabuleiroComputador
 }
 
-
 fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean {
+
+    val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiroPalpites,linha,coluna,"E",1)
+
+    for (coordenada in coordenadasFronteira)
+        if (tabuleiroPalpites[coordenada.first-1][coordenada.second-1] != null) {
+            if (tabuleiroPalpites[coordenada.first-1][coordenada.second-1] == '2'){
+                return false
+            }
+        }
+
     return false
 }
 
