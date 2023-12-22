@@ -457,16 +457,20 @@ fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: 
 
 fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean {
 
-    val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiroPalpites,linha,coluna,"E",1)
+    if (tabuleiroPalpites[linha - 1][coluna - 1] == '1') return true
+    if (tabuleiroPalpites[linha - 1][coluna - 1] == null) return false
 
-    for (coordenada in coordenadasFronteira)
-        if (tabuleiroPalpites[coordenada.first-1][coordenada.second-1] != null) {
-            if (tabuleiroPalpites[coordenada.first-1][coordenada.second-1] == '2'){
-                return false
-            }
+    var count = 0
+    val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiroPalpites, linha, coluna, "E", 1)
+
+    for (coordenada in coordenadasFronteira) {
+        if (tabuleiroPalpites[coordenada.first - 1][coordenada.second - 1] != null) {
+            if (tabuleiroPalpites[coordenada.first - 1][coordenada.second - 1] == '2') return true
+            if (tabuleiroPalpites[coordenada.first - 1][coordenada.second - 1] == '3')
         }
-
+    }
     return false
+
 }
 
 
