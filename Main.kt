@@ -358,8 +358,10 @@ fun gerarCoordenadasFronteira(tabuleiro: Array<Array<Char?>>,
 
 
     for (coordenadas in coordenadasNavio) {
+
         val linhaNavioNaMatriz = coordenadas.first - 1
         val colunaNavioNaMatriz = coordenadas.second - 1
+
         for (posicaoLinha in linhaNavioNaMatriz - 1..linhaNavioNaMatriz + 1) {
             for (posicaoColuna in colunaNavioNaMatriz - 1..colunaNavioNaMatriz + 1) {
 
@@ -457,20 +459,28 @@ fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: 
 
 fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean {
 
-    if (tabuleiroPalpites[linha - 1][coluna - 1] == '1') return true
-    if (tabuleiroPalpites[linha - 1][coluna - 1] == null) return false
+    val dimensao = tabuleiroPalpites[linha - 1][coluna - 1].toString().toIntOrNull() ?: return false
 
-    var count = 0
-    val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiroPalpites, linha, coluna, "E", 1)
+    var coordenadasNavio = emptyArray<Pair<Int, Int>>()
 
-    for (coordenada in coordenadasFronteira) {
-        if (tabuleiroPalpites[coordenada.first - 1][coordenada.second - 1] != null) {
-            if (tabuleiroPalpites[coordenada.first - 1][coordenada.second - 1] == '2') return true
-            if (tabuleiroPalpites[coordenada.first - 1][coordenada.second - 1] == '3')
+    for (i in linha - dimensao..<linha + dimensao) {
+        if (coordenadaContida(tabuleiroPalpites, i, coluna - 1) &&
+                tabuleiroPalpites[i][coluna - 1] == dimensao.toString()[0]) {
+            coordenadasNavio += Pair(i, coluna - 1) //coordenadas da matriz
         }
     }
+    if (coordenadasNavio.size == dimensao) return true
+    if (coordenadasNavio.size < dimensao) return false
+    if (coordenadasNavio.isEmpty()) {
+        for (j in coluna - dimensao..<coluna + dimensao) {
+            if (coordenadaContida(tabuleiroPalpites, linha - 1, j) &&
+                    tabuleiroPalpites[linha - 1][j] == dimensao.toString()[0])
+                coordenadasNavio += Pair(linha - 1, j)
+        }
+        if (coordenadasNavio.size == dimensao) return true
+        if (coordenadasNavio.size < dimensao) return false
+    }
     return false
-
 }
 
 
