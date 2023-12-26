@@ -206,16 +206,16 @@ fun processaCoordenadas(coordenadas: String?, numLinhas: Int, numColunas: Int): 
 
 fun criaLegendaHorizontal(numColunas: Int): String {
     var count = 0
-    var codigoAsciiLetra = 65
+    var codigoAsciiLetraA = 65
     var legendaHorizontal = ""
     while (count < numColunas) {
         legendaHorizontal += if (count == numColunas - 1) {
-            "${codigoAsciiLetra.toChar()}"
+            "${codigoAsciiLetraA.toChar()}"
         } else {
-            "${codigoAsciiLetra.toChar()} | "
+            "${codigoAsciiLetraA.toChar()} | "
         }
         count++
-        codigoAsciiLetra++
+        codigoAsciiLetraA++
     }
     return legendaHorizontal
 }
@@ -466,7 +466,7 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
     for (i in linha - dimensao..<linha + dimensao) {
         if (coordenadaContida(tabuleiroPalpites, i, coluna - 1) &&
                 tabuleiroPalpites[i][coluna - 1] == dimensao.toString()[0]) {
-            coordenadasNavio += Pair(i, coluna - 1) //coordenadas da matriz
+            coordenadasNavio += Pair(i, coluna - 1)
         }
     }
     if (coordenadasNavio.size == dimensao) return true
@@ -486,7 +486,33 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
 
 fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Array<Array<String>> {
     //Substitui criaTerreno()
-    return Array(0) { Array(0) { "" } }
+
+    var mapa = Array(tabuleiroReal.size) { Array(tabuleiroReal[0].size) { "|" } }
+
+    for (linha in 0 until mapa.size) {
+        for (coluna in 0 until mapa[linha].size) {
+
+            val valor = tabuleiroReal[linha][coluna]
+
+            if (valor != null) {
+                if (eTabuleiroReal) {
+                    mapa[linha][coluna] = " $valor |"
+                } else {
+                    mapa[linha][coluna] = " $valor |" // codigo ascii consoante navioCompleto ou nao
+                }
+            } else {
+                if (eTabuleiroReal) {
+                    mapa[linha][coluna] = " ~ |"
+                }else{
+                    mapa[linha][coluna] = " ? |"
+                }
+            }
+
+        }
+    }
+
+
+    return mapa
 }
 
 fun lancarTiro(tabuleiroRealComputador: Array<Array<Char?>>,
