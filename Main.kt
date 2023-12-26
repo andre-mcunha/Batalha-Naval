@@ -487,23 +487,49 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
 fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Array<Array<String>> {
     //Substitui criaTerreno()
 
-    var mapa = Array(tabuleiroReal.size) { Array(tabuleiroReal[0].size) { "|" } }
+    var mapa = Array(tabuleiroReal.size + 1) { Array(tabuleiroReal[0].size + 1) { "|" } }
+
+    val codAscii2 = '\u2082'
+    val codAscii3 = '\u2083'
+    val codAscii4 = '\u2084'
+    var codAsciiA = 65
+    var count = 1
 
     for (linha in 0 until mapa.size) {
         for (coluna in 0 until mapa[linha].size) {
 
             val valor = tabuleiroReal[linha][coluna]
 
+            if (linha == 0) {
+                mapa[linha][coluna] = " ${codAsciiA.toChar()} "
+                codAsciiA++
+            }
+            if (coluna == mapa[linha].size - 1) {
+                mapa[linha][coluna] = " $count "
+                count++
+            }
+
             if (valor != null) {
-                if (eTabuleiroReal) {
-                    mapa[linha][coluna] = " $valor |"
-                } else {
-                    mapa[linha][coluna] = " $valor |" // codigo ascii consoante navioCompleto ou nao
-                }
+                if (valor != 'X') {
+                    if (eTabuleiroReal) {
+                        mapa[linha][coluna] = " $valor |"
+                    } else {
+                        if ((navioCompleto(tabuleiroReal, linha, coluna))) {
+                            mapa[linha][coluna] = " $valor |"
+                        } else {
+                            when (valor.toString().toInt()) {
+                                2 -> mapa[linha][coluna] = " $codAscii2 |"
+                                3 -> mapa[linha][coluna] = " $codAscii3 |"
+                                4 -> mapa[linha][coluna] = " $codAscii4 |"
+                            }
+                        }
+                    }
+                } else mapa[linha][coluna] = " X "
+
             } else {
                 if (eTabuleiroReal) {
                     mapa[linha][coluna] = " ~ |"
-                }else{
+                } else {
                     mapa[linha][coluna] = " ? |"
                 }
             }
@@ -515,25 +541,90 @@ fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Arra
     return mapa
 }
 
-fun lancarTiro(tabuleiroRealComputador: Array<Array<Char?>>,
-               tabuleiroPalpitesHumano: Array<Array<Char?>>,
+fun lancarTiro(tabuleiroReal: Array<Array<Char?>>,
+               tabuleiroPalpites: Array<Array<Char?>>,
                linhaEColuna: Pair<Int, Int>): String {
-    return ""
+
+    var mensagem = ""
+
+    when (tabuleiroReal[linhaEColuna.first][linhaEColuna.second]) {
+        null -> {
+            tabuleiroPalpites[linhaEColuna.first][linhaEColuna.second] = 'X'
+            mensagem = "Agua."
+        }
+
+        '1' -> {
+            tabuleiroPalpites[linhaEColuna.first][linhaEColuna.second] = '1'
+            mensagem = "Tiro num submarino."
+        }
+
+        '2' -> {
+            tabuleiroPalpites[linhaEColuna.first][linhaEColuna.second] = '2'
+            mensagem = "Tiro num contra-torpedeiro."
+        }
+
+        '3' -> {
+            tabuleiroPalpites[linhaEColuna.first][linhaEColuna.second] = '3'
+            mensagem = "Tiro num navio-tanque."
+        }
+
+        '4' -> {
+            tabuleiroPalpites[linhaEColuna.first][linhaEColuna.second] = '4'
+            mensagem = "Tiro num porta-avioes."
+        }
+    }
+
+
+
+    return mensagem
 }
 
 fun geraTiroComputador(tabuleiroPalpitesComputador: Array<Array<Char?>>): Pair<Int, Int> {
-    return Pair(0, 0)
+
+    var coordenadasNull = emptyArray<Pair<Int, Int>>()
+
+    for (linha in 0 until tabuleiroPalpitesComputador.size) {
+        for (coluna in 0 until tabuleiroPalpitesComputador[linha].size) {
+            if (tabuleiroPalpitesComputador[linha][coluna] == null) coordenadasNull += Pair(linha, coluna)
+        }
+    }
+
+    val tiroComputador = coordenadasNull.random()
+
+    return tiroComputador
 }
 
 fun contarNaviosDeDimensao(tabuleiro: Array<Array<Char?>>, dimensao: Int): Int {
-    return 0
+
+    var count = 0
+
+    for (linha in 0 until tabuleiro.size) {
+        for (coluna in 0 until tabuleiro[linha].size) {
+
+            if (tabuleiro[linha][coluna] == dimensao.toChar()) {
+                if (navioCompleto(tabuleiro, linha, coluna)) count++
+            }
+        }
+    }
+    when (dimensao) {
+        2 -> count /= 2
+        3 -> count /= 3
+        4 -> count /= 4
+    }
+    return count
 }
 
 fun venceu(tabuleiro: Array<Array<Char?>>): Boolean {
-    return false
+
+    return (contarNaviosDeDimensao(tabuleiro,1) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[0]
+            && contarNaviosDeDimensao(tabuleiro,2) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[1]
+            && contarNaviosDeDimensao(tabuleiro,3) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[2]
+            && contarNaviosDeDimensao(tabuleiro,4) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[3])
+
 }
 
 fun lerJogo(nomeDoFicheiro: String, tipoDeTabuleiro: Int): Array<Array<Char?>> {
+
     return Array(0) { Array(0) { ' ' } }
 }
 
