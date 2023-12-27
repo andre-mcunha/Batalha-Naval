@@ -1,3 +1,5 @@
+import java.io.File
+
 const val MENU_PRINCIPAL = 100
 const val MENU_DEFINIR_TABULEIRO = 101
 const val MENU_DEFINIR_NAVIOS = 102
@@ -463,7 +465,12 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
 
     var coordenadasNavio = emptyArray<Pair<Int, Int>>()
 
-    for (i in linha - dimensao..<linha + dimensao) {
+    val linhaMinima = (linha - dimensao) + 1
+    val linhaMaxima = linha + dimensao
+    val colunaMinima = (coluna - dimensao) + 1
+    val colunaMaxima = coluna + dimensao
+
+    for (i in linhaMinima until linhaMaxima) {
         if (coordenadaContida(tabuleiroPalpites, i, coluna - 1) &&
                 tabuleiroPalpites[i][coluna - 1] == dimensao.toString()[0]) {
             coordenadasNavio += Pair(i, coluna - 1)
@@ -471,11 +478,13 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
     }
     if (coordenadasNavio.size == dimensao) return true
     if (coordenadasNavio.size < dimensao) return false
+
     if (coordenadasNavio.isEmpty()) {
-        for (j in coluna - dimensao..<coluna + dimensao) {
+        for (j in colunaMinima until colunaMaxima) {
             if (coordenadaContida(tabuleiroPalpites, linha - 1, j) &&
-                    tabuleiroPalpites[linha - 1][j] == dimensao.toString()[0])
+                    tabuleiroPalpites[linha - 1][j] == dimensao.toString()[0]) {
                 coordenadasNavio += Pair(linha - 1, j)
+            }
         }
         if (coordenadasNavio.size == dimensao) return true
         if (coordenadasNavio.size < dimensao) return false
@@ -487,7 +496,7 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
 fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Array<Array<String>> {
     //Substitui criaTerreno()
 
-    var mapa = Array(tabuleiroReal.size + 1) { Array(tabuleiroReal[0].size + 1) { "|" } }
+    val mapa = Array(tabuleiroReal.size + 1) { Array(tabuleiroReal[0].size + 1) { "|" } }
 
     val codAscii2 = '\u2082'
     val codAscii3 = '\u2083'
@@ -536,8 +545,6 @@ fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Arra
 
         }
     }
-
-
     return mapa
 }
 
@@ -572,6 +579,8 @@ fun lancarTiro(tabuleiroReal: Array<Array<Char?>>,
             tabuleiroPalpites[linhaEColuna.first][linhaEColuna.second] = '4'
             mensagem = "Tiro num porta-avioes."
         }
+
+        else -> mensagem = "Agua."
     }
 
 
@@ -616,15 +625,26 @@ fun contarNaviosDeDimensao(tabuleiro: Array<Array<Char?>>, dimensao: Int): Int {
 
 fun venceu(tabuleiro: Array<Array<Char?>>): Boolean {
 
-    return (contarNaviosDeDimensao(tabuleiro,1) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[0]
-            && contarNaviosDeDimensao(tabuleiro,2) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[1]
-            && contarNaviosDeDimensao(tabuleiro,3) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[2]
-            && contarNaviosDeDimensao(tabuleiro,4) == calculaNumNavios(tabuleiro.size,tabuleiro[0].size)[3])
+    return (contarNaviosDeDimensao(tabuleiro, 1) == calculaNumNavios(tabuleiro.size, tabuleiro[0].size)[0]
+            && contarNaviosDeDimensao(tabuleiro, 2) == calculaNumNavios(tabuleiro.size, tabuleiro[0].size)[1]
+            && contarNaviosDeDimensao(tabuleiro, 3) == calculaNumNavios(tabuleiro.size, tabuleiro[0].size)[2]
+            && contarNaviosDeDimensao(tabuleiro, 4) == calculaNumNavios(tabuleiro.size, tabuleiro[0].size)[3])
 
 }
 
 fun lerJogo(nomeDoFicheiro: String, tipoDeTabuleiro: Int): Array<Array<Char?>> {
 
+    val linhas = File("nomeDoFicheiro.csv").readLines()
+
+    when (tipoDeTabuleiro) {
+    1 ->{
+        for (linha in 0 until linhas.size) {
+            for (count in 0 until linhas.size)
+
+            tabuleiroHumano[linha][count] = linhas[0].split(",")[2][0]
+        }
+    }  //tabuleiro real humano
+    }
     return Array(0) { Array(0) { ' ' } }
 }
 
