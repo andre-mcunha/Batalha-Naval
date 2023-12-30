@@ -74,61 +74,73 @@ fun menuDefinirTabuleiro(): Int {
     tabuleiroPalpitesDoHumano = criaTabuleiroVazio(numLinhas, numColunas)
 
     var orientacao: String? = "E"
-
     var mapaHumano = obtemMapa(tabuleiroHumano, true)
+
     for (linha in mapaHumano) println(linha)
 
     val numDeNavios = calculaNumNavios(numLinhas, numColunas)
     val tiposDeNavios = arrayOf("submarino", "contra-torpedeiro", "navio-tanque", "porta-avioes")
 
+
     for (posicao in 0 until numDeNavios.size) {
         if (numDeNavios[posicao] != 0) {
             for (count in 0 until numDeNavios[posicao]) {
-
                 var sucessoDaInsercao = false
                 var coordenadas: String?
-                do {
+
+                while (!sucessoDaInsercao) {
+                    println("Entrou no loop do-while") // Mensagem de debug
+
                     println("""Insira as coordenadas de um ${tiposDeNavios[posicao]}:
-            |Coordenadas? (ex: 6,G)
-        """.trimMargin())
-                    coordenadas = pedeCoordenadas()
-                    if (coordenadas != null && coordenadas != "") {
-                        if (coordenadas.toIntOrNull() == -1) return MENU_PRINCIPAL
-                        if (coordenadas.toIntOrNull() == 0) return SAIR
-                    }
+        |Coordenadas? (ex: 6,G)
+    """.trimMargin())
+
+                    do {
+                        coordenadas = readlnOrNull()
+                        if (coordenadas != null && coordenadas != "") {
+                            if (coordenadas.toIntOrNull() == -1) return MENU_PRINCIPAL
+                            if (coordenadas.toIntOrNull() == 0) return SAIR
+                        }
+                        val validadeDasCoordenadas = processaCoordenadas(coordenadas, numLinhas, numColunas)
+                                ?: Pair(-1, -1)
+                    } while (validadeDasCoordenadas == Pair(-1, -1))
 
                     val coordenadasNum = processaCoordenadas(coordenadas, numLinhas, numColunas) ?: Pair(-1, -1)
 
                     if (posicao > 0) {
                         println("""Insira a orientacao do navio:
-                                 |Orientacao? (N, S, E, O)
-                                  """.trimMargin())
+            |Orientacao? (N, S, E, O)
+        """.trimMargin())
+
                         orientacao = pedeOrientacao()
                         when {
                             orientacao.toIntOrNull() == -1 -> return MENU_PRINCIPAL
                             orientacao.toIntOrNull() == 0 -> return SAIR
                         }
                     }
-                    sucessoDaInsercao = when (orientacao) {
-                        null -> false
-                        "E" -> insereNavioSimples(tabuleiroHumano,
-                                coordenadasNum.first,
-                                coordenadasNum.second,
-                                1)
+                    if (orientacao != null) {
+                        when {
+                            orientacao == "E" -> {
+                                println("Orientacao E") // Mensagem de debug
+                                sucessoDaInsercao = insereNavioSimples(tabuleiroHumano, coordenadasNum.first, coordenadasNum.second, posicao + 1)
+                            }
 
-                        else -> insereNavio(tabuleiroHumano,
-                                coordenadasNum.first,
-                                coordenadasNum.second,
-                                orientacao,
-                                posicao + 1)
+                            else -> {
+                                println("Orientacao diferente de E") // Mensagem de debug
+                                sucessoDaInsercao = insereNavio(tabuleiroHumano, coordenadasNum.first, coordenadasNum.second, orientacao, posicao + 1)
+                            }
+                        }
+
+                        println("Sucesso da insercao: $sucessoDaInsercao") // Mensagem de debug
                     }
-                } while (!sucessoDaInsercao)
-
+                    println("Sucesso da insercao: $sucessoDaInsercao") // Mensagem de debug
+                }
                 mapaHumano = obtemMapa(tabuleiroHumano, true)
                 for (linha in mapaHumano) println(linha)
             }
         }
     }
+
     preencheTabuleiroComputador(tabuleiroComputador, calculaNumNavios(numLinhas, numColunas))
     val mapaComputador = obtemMapa(tabuleiroComputador, true)
     println("Pretende ver o mapa gerado para o Computador? (S/N)")
@@ -258,11 +270,9 @@ fun pedeColunas(): Int {
 }
 
 fun pedeCoordenadas(): String? {
-    var coordenada: String?
-    do {
-        coordenada = readlnOrNull()
-    } while (processaCoordenadas(coordenada, numLinhas, numColunas) == null)
 
+
+    val coordenada: String? = readlnOrNull()
     return coordenada
 }
 
@@ -372,7 +382,6 @@ fun criaTabuleiroVazio(numLinhas: Int, numColunas: Int): Array<Array<Char?>> {
 fun coordenadaContida(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean {
     return linha in 1..tabuleiro.size && coluna in 1..tabuleiro[0].size
 }
-//a linha e a coluna começam em 1
 
 
 fun limparCoordenadasVazias(coordenadas: Array<Pair<Int, Int>>): Array<Pair<Int, Int>> {
@@ -492,22 +501,23 @@ fun insereNavioSimples(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, 
 
 
 fun insereNavio(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, orientacao: String, dimensao: Int): Boolean {
-    //quando receber a orientaçao E usar a fun inserirNavioSimples
+    if (orientacao == "E") {
+        return insereNavioSimples(tabuleiro, linha, coluna, dimensao)
+    }
 
     val coordenadasNavio = gerarCoordenadasNavio(tabuleiro, linha, coluna, orientacao, dimensao)
     val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiro, linha, coluna, orientacao, dimensao)
     val coordenadasNavioEFronteira = juntarCoordenadas(coordenadasNavio, coordenadasFronteira)
 
-    if (orientacao == "E") {
-        return insereNavioSimples(tabuleiro, linha, coluna, dimensao)
-    }
-    if (coordenadasNavioEFronteira.isNotEmpty() && (estaLivre(tabuleiro, coordenadasNavioEFronteira))) {
+    if (coordenadasNavioEFronteira.isNotEmpty() && estaLivre(tabuleiro, coordenadasNavioEFronteira)) {
         for (coordenada in coordenadasNavio) {
             tabuleiro[coordenada.first - 1][coordenada.second - 1] = dimensao.toString().first()
         }
         return true
-    } else println("!!! Posicionamento invalido, tente novamente")
-    return false
+    } else {
+        println("!!! Posicionamento invalido, tente novamente")
+        return false
+    }
 }
 
 
