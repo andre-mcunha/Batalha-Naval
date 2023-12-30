@@ -39,8 +39,8 @@ fun menuPrincipal(): Int {
     when (menuEscolhido) {
         1 -> return MENU_DEFINIR_TABULEIRO
         2 -> return MENU_JOGAR
-        3 -> MENU_GRAVAR_FICHEIRO
-        4 -> MENU_LER_FICHEIRO
+        3 -> return MENU_GRAVAR_FICHEIRO
+        4 -> return MENU_LER_FICHEIRO
         -1 -> return MENU_PRINCIPAL
         0 -> return SAIR
     }
@@ -70,8 +70,10 @@ fun menuDefinirTabuleiro(): Int {
 
     tabuleiroHumano = criaTabuleiroVazio(numLinhas, numColunas)
     tabuleiroComputador = criaTabuleiroVazio(numLinhas, numColunas)
+    tabuleiroPalpitesDoComputador = criaTabuleiroVazio(numLinhas, numColunas)
+    tabuleiroPalpitesDoHumano = criaTabuleiroVazio(numLinhas, numColunas)
 
-    var orientacao: String?
+    var orientacao: String? = "E"
 
     var mapaHumano = obtemMapa(tabuleiroHumano, true)
     for (linha in mapaHumano) println(linha)
@@ -82,6 +84,7 @@ fun menuDefinirTabuleiro(): Int {
     for (posicao in 0 until numDeNavios.size) {
         if (numDeNavios[posicao] != 0) {
             for (count in 0 until numDeNavios[posicao]) {
+
                 var sucessoDaInsercao = false
                 var coordenadas: String?
                 do {
@@ -93,13 +96,9 @@ fun menuDefinirTabuleiro(): Int {
                         if (coordenadas.toIntOrNull() == -1) return MENU_PRINCIPAL
                         if (coordenadas.toIntOrNull() == 0) return SAIR
                     }
+
                     val coordenadasNum = processaCoordenadas(coordenadas, numLinhas, numColunas) ?: Pair(-1, -1)
-                    if (posicao == 0) {
-                        sucessoDaInsercao = insereNavioSimples(tabuleiroHumano,
-                                coordenadasNum.first,
-                                coordenadasNum.second,
-                                1)
-                    }
+
                     if (posicao > 0) {
                         println("""Insira a orientacao do navio:
                                  |Orientacao? (N, S, E, O)
@@ -109,13 +108,22 @@ fun menuDefinirTabuleiro(): Int {
                             orientacao.toIntOrNull() == -1 -> return MENU_PRINCIPAL
                             orientacao.toIntOrNull() == 0 -> return SAIR
                         }
-                        sucessoDaInsercao = insereNavio(tabuleiroHumano,
+                    }
+                    sucessoDaInsercao = when (orientacao) {
+                        null -> false
+                        "E" -> insereNavioSimples(tabuleiroHumano,
+                                coordenadasNum.first,
+                                coordenadasNum.second,
+                                1)
+
+                        else -> insereNavio(tabuleiroHumano,
                                 coordenadasNum.first,
                                 coordenadasNum.second,
                                 orientacao,
                                 posicao + 1)
                     }
                 } while (!sucessoDaInsercao)
+
                 mapaHumano = obtemMapa(tabuleiroHumano, true)
                 for (linha in mapaHumano) println(linha)
             }
@@ -133,6 +141,7 @@ fun menuDefinirTabuleiro(): Int {
                 println("!!!Resposta invalida, responda S ou N)")
                 resposta = null
             }
+
             resposta == "S" -> {
                 for (linha in mapaComputador) println(linha)
             }
@@ -147,8 +156,7 @@ fun menuDefinirNavios(): Int {
 }
 
 fun menuJogar(): Int {
-    tabuleiroPalpitesDoComputador = criaTabuleiroVazio(numLinhas, numColunas)
-    tabuleiroPalpitesDoHumano = criaTabuleiroVazio(numLinhas, numColunas)
+
     val mapaPalpitesHumano = obtemMapa(tabuleiroPalpitesDoHumano, false)
     for (i in mapaPalpitesHumano) print(i)
 
@@ -181,6 +189,19 @@ fun menuLerFicheiro(): Int {
 }
 
 fun menuGravarFicheiro(): Int {
+
+    println("Introduza o nome do ficheiro (ex: jogo.txt)")
+    var nomeDoFicheiro: String?
+    do {
+        nomeDoFicheiro = readlnOrNull()
+        if (nomeDoFicheiro != null && nomeDoFicheiro != "") {
+            if (nomeDoFicheiro.toIntOrNull() == -1) return MENU_PRINCIPAL
+            if (nomeDoFicheiro.toIntOrNull() == 0) return SAIR
+        }
+    } while (nomeDoFicheiro == null)
+
+    gravarJogo(nomeDoFicheiro, tabuleiroHumano, tabuleiroPalpitesDoHumano, tabuleiroComputador, tabuleiroPalpitesDoComputador)
+
     return MENU_PRINCIPAL
 }
 
@@ -377,27 +398,30 @@ fun gerarCoordenadasNavio(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: In
     var coordenadasNavio = emptyArray<Pair<Int, Int>>()
     var possiveisCoordenadasNavio = emptyArray<Pair<Int, Int>>()
 
-    if (linha in 0..tabuleiro.size && coluna in 0..tabuleiro[0].size) {
+    if (coordenadaContida(tabuleiro, linha, coluna)) {
         when (orientacao) {
-            "E" -> for (posicao in coluna - 1..coluna + 2) {
-                if (coordenadaContida(tabuleiro, linha, posicao + 1)) {
-                    possiveisCoordenadasNavio += Pair(linha, posicao + 1)
+            "E" -> for (colunas in coluna..coluna + 3) {
+                if (coordenadaContida(tabuleiro, linha, colunas)) {
+                    possiveisCoordenadasNavio += Pair(linha, colunas)
                 }
             }
-            "N" -> for (posicao in linha - 1 downTo linha - 4) {
-                if (coordenadaContida(tabuleiro, posicao + 1, coluna)) {
-                    possiveisCoordenadasNavio += Pair(posicao + 1, coluna)
+
+            "N" -> for (linhas in linha downTo linha - 3) {
+                if (coordenadaContida(tabuleiro, linhas, coluna)) {
+                    possiveisCoordenadasNavio += Pair(linhas, coluna)
                 }
             }
-            "O" -> for (posicao in coluna - 1 downTo coluna - 4) {
-                if (coordenadaContida(tabuleiro, linha, posicao + 1)) {
-                    possiveisCoordenadasNavio += Pair(linha, posicao + 1)
+
+            "O" -> for (colunas in coluna downTo coluna - 3) {
+                if (coordenadaContida(tabuleiro, linha, colunas)) {
+                    possiveisCoordenadasNavio += Pair(linha, colunas)
                 }
             }
+
             "S" -> {
-                for (posicao in linha - 1..linha + 2) {
-                    if (coordenadaContida(tabuleiro, posicao + 1, coluna)) {
-                        possiveisCoordenadasNavio += Pair(posicao + 1, coluna)
+                for (linhas in linha..linha + 3) {
+                    if (coordenadaContida(tabuleiro, linhas, coluna)) {
+                        possiveisCoordenadasNavio += Pair(linhas, coluna)
                     }
                 }
             }
@@ -456,17 +480,13 @@ fun insereNavioSimples(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, 
     val coordenadasNavio = gerarCoordenadasNavio(tabuleiro, linha, coluna, "E", dimensao)
     val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiro, linha, coluna, "E", dimensao)
     val coordenadasNavioEFronteira = juntarCoordenadas(coordenadasNavio, coordenadasFronteira)
-    if (coordenadasNavioEFronteira.isNotEmpty()) {
-        if (estaLivre(tabuleiro, coordenadasNavioEFronteira)) {
-            for (coordenada in coordenadasNavio) {
-                tabuleiro[coordenada.first - 1][coordenada.second - 1] = dimensao.toString().first()
-            }
-            return true
+
+    if (coordenadasNavioEFronteira.isNotEmpty() && (estaLivre(tabuleiro, coordenadasNavioEFronteira))) {
+        for (coordenada in coordenadasNavio) {
+            tabuleiro[coordenada.first - 1][coordenada.second - 1] = dimensao.toString().first()
         }
-        println("!!! Posicionamento invalido, tente novamente")
-        return false
-    }
-    println("!!! Posicionamento invalido, tente novamente")
+        return true
+    } else println("!!! Posicionamento invalido, tente novamente")
     return false
 }
 
@@ -479,19 +499,17 @@ fun insereNavio(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, orienta
     val coordenadasNavioEFronteira = juntarCoordenadas(coordenadasNavio, coordenadasFronteira)
 
     if (orientacao == "E") {
-        insereNavioSimples(tabuleiro, linha, coluna, dimensao)
+        return insereNavioSimples(tabuleiro, linha, coluna, dimensao)
     }
-    if (coordenadasNavioEFronteira.isNotEmpty()) {
-        if(estaLivre(tabuleiro, coordenadasNavioEFronteira)) {
-            for (coordenada in coordenadasNavio) {
-                tabuleiro[coordenada.first - 1][coordenada.second - 1] = dimensao.toString().first()
-            }
-            return true
+    if (coordenadasNavioEFronteira.isNotEmpty() && (estaLivre(tabuleiro, coordenadasNavioEFronteira))) {
+        for (coordenada in coordenadasNavio) {
+            tabuleiro[coordenada.first - 1][coordenada.second - 1] = dimensao.toString().first()
         }
-    }
-    println("!!! Posicionamento invalido, tente novamente")
+        return true
+    } else println("!!! Posicionamento invalido, tente novamente")
     return false
 }
+
 
 fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: Array<Int>): Array<Array<Char?>> {
 
@@ -671,19 +689,7 @@ fun venceu(tabuleiro: Array<Array<Char?>>): Boolean {
 
 fun lerJogo(nomeDoFicheiro: String, tipoDeTabuleiro: Int): Array<Array<Char?>> {
 
-    val ficheiro = File("nomeDoFicheiro.csv").readLines()
-
-    when (tipoDeTabuleiro) {
-        1 -> {
-            for (i in 0 until ficheiro.size) {
-                val linha = ficheiro[i].split(",")
-
-            }
-        }
-
-    }
-
-    return Array(0) { Array(0) { ' ' } }
+    return tabuleiroComputador
 }
 
 fun gravarJogo(nomeDoFicheiro: String,
@@ -692,7 +698,38 @@ fun gravarJogo(nomeDoFicheiro: String,
                tabuleiroRealComputador: Array<Array<Char?>>,
                tabuleiroPalpitesComputador: Array<Array<Char?>>) {
 
+    val tabuleiros = arrayOf(tabuleiroRealHumano, tabuleiroPalpitesHumano, tabuleiroRealComputador, tabuleiroPalpitesComputador)
 
+    val fileprinter = File(nomeDoFicheiro).printWriter()
+    var caracter: String?
+    val codAscii2 = '\u2082'
+    val codAscii3 = '\u2083'
+    val codAscii4 = '\u2084'
+
+    fileprinter.println("${tabuleiroRealHumano.size},${tabuleiroRealHumano[0].size}\n") // tamanho do tabuleiro
+
+    for (tabuleiro in tabuleiros) {
+        when (tabuleiro) {
+            tabuleiroRealHumano -> fileprinter.println("Jogador\nReal")
+            tabuleiroPalpitesHumano -> fileprinter.println("Jogador\nPalpites")
+            tabuleiroRealComputador -> fileprinter.println("Computador\nReal")
+            tabuleiroPalpitesComputador -> fileprinter.println("Computador\nPalpites")
+        }
+        for (linha in 0 until tabuleiro.size) {
+            for (coluna in 0 until tabuleiro[0].size) {
+                caracter = when (tabuleiro[linha][coluna]) {
+                    '1', '2', '3', '4', 'X' -> tabuleiro[linha][coluna].toString()
+                    codAscii2 -> "2"
+                    codAscii3 -> "3"
+                    codAscii4 -> "4"
+                    else -> ""
+                }
+                fileprinter.print(caracter)
+                if (coluna == tabuleiro[0].size - 1) fileprinter.print("\n") else fileprinter.print(',')
+            }
+        }
+    }
+    fileprinter.close()
 }
 
 fun main() {
