@@ -73,6 +73,12 @@ fun menuDefinirTabuleiro(): Int {
     tabuleiroPalpitesDoComputador = criaTabuleiroVazio(numLinhas, numColunas)
     tabuleiroPalpitesDoHumano = criaTabuleiroVazio(numLinhas, numColunas)
 
+
+    return MENU_DEFINIR_NAVIOS
+}
+
+fun menuDefinirNavios(): Int {
+
     var orientacao: String? = "E"
     var mapaHumano = obtemMapa(tabuleiroHumano, true)
 
@@ -159,12 +165,8 @@ fun menuDefinirTabuleiro(): Int {
             }
         }
     } while (resposta == null)
-    return MENU_PRINCIPAL
-}
 
-fun menuDefinirNavios(): Int {
     return MENU_PRINCIPAL
-
 }
 
 fun menuJogar(): Int {
@@ -451,8 +453,8 @@ fun gerarCoordenadasNavio(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: In
 fun gerarCoordenadasFronteira(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, orientacao: String, dimensao: Int): Array<Pair<Int, Int>> {
 
     var coordenadasFronteira: Array<Pair<Int, Int>> = emptyArray()
-
     val coordenadasNavio = gerarCoordenadasNavio(tabuleiro, linha, coluna, orientacao, dimensao)
+
     if (coordenadasNavio.isNotEmpty()) {
         for (coordenadas in coordenadasNavio) {
 
@@ -472,7 +474,7 @@ fun gerarCoordenadasFronteira(tabuleiro: Array<Array<Char?>>, linha: Int, coluna
             }
         }
     }
-    return coordenadasFronteira
+    return emptyArray()
 }
 
 
