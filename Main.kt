@@ -88,9 +88,9 @@ fun menuDefinirNavios(): Int {
     val tiposDeNavios = arrayOf("submarino", "contra-torpedeiro", "navio-tanque", "porta-avioes")
 
 
-    for (posicao in 0 until numDeNavios.size) {
+    for (posicao in 0 until numDeNavios.size) { // 0,1,2,3
         if (numDeNavios[posicao] != 0) {
-            for (count in 0 until numDeNavios[posicao]) {
+            for (count in 0 until numDeNavios[posicao]) { //0 até numero de vezes que esse navio tem de ser inserido
                 var sucessoDaInsercao = false
                 var coordenadas: String?
 
@@ -152,6 +152,7 @@ fun menuDefinirNavios(): Int {
                 println("!!!Resposta invalida, responda S ou N)")
                 resposta = null
             }
+
             resposta == "S" -> for (linha in mapaComputador) println(linha)
         }
     } while (resposta == null)
@@ -183,25 +184,25 @@ fun menuJogar(): Int {
             } while (processaCoordenadas(tiro, numLinhas, numColunas) == null)
 
             val conversaoTiroHumano = processaCoordenadas(tiro, numLinhas, numColunas) ?: Pair(-1, -1)
-            print(">>>> HUMANO <<<< ${lancarTiro(tabuleiroComputador, tabuleiroPalpitesDoHumano, conversaoTiroHumano)}")
-            if (navioCompleto(tabuleiroPalpitesDoHumano, conversaoTiroHumano.first-1, conversaoTiroHumano.second-1)){
+            print(">>> HUMANO >>> ${lancarTiro(tabuleiroComputador, tabuleiroPalpitesDoHumano, conversaoTiroHumano)}")
+            if (navioCompleto(tabuleiroPalpitesDoHumano, conversaoTiroHumano.first - 1, conversaoTiroHumano.second - 1)) {
                 println(" Navio ao fundo!")
+            } else println()
+            if (venceu(tabuleiroPalpitesDoHumano)) {
+                println("PARABENS! Venceu o jogo!")
+                do {
+                    println("Prima enter para voltar ao menu principal")
+                    val continua: String? = readlnOrNull()
+                    if (continua != null && continua != "") {
+                        if (continua.toIntOrNull() == -1) return MENU_PRINCIPAL
+                        if (continua.toIntOrNull() == 0) return SAIR
+                    }
+                } while (continua != "")
+                return MENU_PRINCIPAL
             }
-                if (venceu(tabuleiroPalpitesDoHumano)) {
-                    println("PARABENS! Venceu o jogo!")
-                    do {
-                        println("Prima enter para voltar ao menu principal")
-                        val continua: String? = readlnOrNull()
-                        if (continua != null && continua != "") {
-                            if (continua.toIntOrNull() == -1) return MENU_PRINCIPAL
-                            if (continua.toIntOrNull() == 0) return SAIR
-                        }
-                    } while (continua != "")
-                    return MENU_PRINCIPAL
-                }
             val tiroDoComputador = geraTiroComputador(tabuleiroPalpitesDoComputador)
             println("Computador lancou tiro para a posicao $tiroDoComputador")
-            println(">>>> COMPUTADOR <<<< ${lancarTiro(tabuleiroHumano, tabuleiroPalpitesDoComputador, tiroDoComputador)}")
+            println(">>> COMPUTADOR >>> ${lancarTiro(tabuleiroHumano, tabuleiroPalpitesDoComputador, tiroDoComputador)}")
 
             if (venceu(tabuleiroPalpitesDoComputador)) {
                 println("OPS! O computador venceu o jogo!")
@@ -218,6 +219,10 @@ fun menuJogar(): Int {
             do {
                 println("Prima enter para continuar")
                 val continua: String? = readlnOrNull()
+                if (continua != null && continua != "") {
+                    if (continua.toIntOrNull() == -1) return MENU_PRINCIPAL
+                    if (continua.toIntOrNull() == 0) return SAIR
+                }
             } while (continua != "")
         }
 
@@ -229,6 +234,29 @@ fun menuJogar(): Int {
 }
 
 fun menuLerFicheiro(): Int {
+
+    var nomeDoFicheiro : String?
+
+    do {
+        println("Introduza o nome do ficheiro (ex: jogo.txt)")
+        nomeDoFicheiro = readlnOrNull()
+        if (nomeDoFicheiro != null && nomeDoFicheiro != "") {
+            if (nomeDoFicheiro.toIntOrNull() == -1) return MENU_PRINCIPAL
+            if (nomeDoFicheiro.toIntOrNull() == 0) return SAIR
+        }
+    } while (nomeDoFicheiro == null || nomeDoFicheiro == "")
+
+   tabuleiroHumano = lerJogo(nomeDoFicheiro,1)
+    println("Tabuleiro ${numLinhas}x${numColunas} lido com sucesso")
+   val mapaHumano = obtemMapa(tabuleiroHumano, true)
+    for (linha in mapaHumano) println(linha)
+
+
+    tabuleiroPalpitesDoHumano = lerJogo(nomeDoFicheiro,2)
+   tabuleiroComputador = lerJogo(nomeDoFicheiro,3)
+   tabuleiroPalpitesDoComputador = lerJogo(nomeDoFicheiro,4)
+
+
     return MENU_PRINCIPAL
 }
 
@@ -511,7 +539,6 @@ fun estaLivre(tabuleiro: Array<Array<Char?>>, conjuntoDeCoordenadas: Array<Pair<
 }
 
 fun insereNavioSimples(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, dimensao: Int): Boolean {
-    //assume sempre orientação Este
 
     val coordenadasNavio = gerarCoordenadasNavio(tabuleiro, linha, coluna, "E", dimensao)
     val coordenadasFronteira = gerarCoordenadasFronteira(tabuleiro, linha, coluna, "E", dimensao)
@@ -729,32 +756,63 @@ fun venceu(tabuleiro: Array<Array<Char?>>): Boolean {
 
 fun lerJogo(nomeDoFicheiro: String, tipoDeTabuleiro: Int): Array<Array<Char?>> {
 
-    val linhas = File("nomeDoFicheiro.csv").readLines()
-    numLinhas = linhas[0][0].toString().toInt()
-    numColunas = linhas[0][2].toString().toInt()
+    val ficheiro = File(nomeDoFicheiro).readLines()
+    numLinhas = ficheiro[0][0].toString().toInt()
+    numColunas = ficheiro[0][2].toString().toInt()
     val tabuleiro = criaTabuleiroVazio(numLinhas, numColunas)
+    var count = 0
 
     when (tipoDeTabuleiro) {
         1 -> {
-            for (numlinha in 4 until 4 + tabuleiroHumano.size) {
-
+            for (linha in 4 until 4 + numLinhas) {
+                val partes = ficheiro[linha].split(",")
+                for (i in 0 until partes.size) {
+                    if (partes[i] != "") {
+                        tabuleiro[count][i] = partes[i].trim().first()
+                    }
+                }
+                count++
             }
         }
 
         2 -> {
-
+            for (linha in numLinhas + 7 until numLinhas * 2 + 7) {
+                val partes = ficheiro[linha].split(",")
+                for (i in 0 until partes.size) {
+                    if (partes[i] != "") {
+                        tabuleiro[count][i] = partes[i].trim().first()
+                    }
+                }
+                count++
+            }
         }
 
         3 -> {
-
+            for (linha in numLinhas * 2 + 10 until numLinhas * 3 + 10) {
+                val partes = ficheiro[linha].split(",")
+                for (i in 0 until partes.size) {
+                    if (partes[i] != "") {
+                        tabuleiro[count][i] = partes[i].trim().first()
+                    }
+                }
+                count++
+            }
         }
 
         4 -> {
-
+            for (linha in numLinhas * 3 + 13 until numLinhas * 4 + 13) {
+                val partes = ficheiro[linha].split(",")
+                for (i in 0 until partes.size) {
+                    if (partes[i] != "") {
+                        tabuleiro[count][i] = partes[i].trim().first()
+                    }
+                }
+                count++
+            }
         }
     }
-    println("tabuleiro${tabuleiroHumano.size}x${tabuleiroHumano[0].size}lido com sucesso")
-    return tabuleiroHumano
+
+    return tabuleiro
 }
 
 fun gravarJogo(nomeDoFicheiro: String,
@@ -776,9 +834,9 @@ fun gravarJogo(nomeDoFicheiro: String,
     for (tabuleiro in tabuleiros) {
         when (tabuleiro) {
             tabuleiroRealHumano -> fileprinter.println("Jogador\nReal")
-            tabuleiroPalpitesHumano -> fileprinter.println("Jogador\nPalpites")
-            tabuleiroRealComputador -> fileprinter.println("Computador\nReal")
-            tabuleiroPalpitesComputador -> fileprinter.println("Computador\nPalpites")
+            tabuleiroPalpitesHumano -> fileprinter.println("\nJogador\nPalpites")
+            tabuleiroRealComputador -> fileprinter.println("\nComputador\nReal")
+            tabuleiroPalpitesComputador -> fileprinter.println("\nComputador\nPalpites")
         }
         for (linha in 0 until tabuleiro.size) {
             for (coluna in 0 until tabuleiro[0].size) {
