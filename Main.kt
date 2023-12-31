@@ -95,8 +95,6 @@ fun menuDefinirNavios(): Int {
                 var coordenadas: String?
 
                 while (!sucessoDaInsercao) {
-                    println("Entrou no loop do-while") // Mensagem de debug
-
                     println("""Insira as coordenadas de um ${tiposDeNavios[posicao]}:
         |Coordenadas? (ex: 6,G)
     """.trimMargin())
@@ -125,21 +123,16 @@ fun menuDefinirNavios(): Int {
                         }
                     }
                     if (orientacao != null) {
-                        when {
+                        sucessoDaInsercao = when {
                             orientacao == "E" -> {
-                                println("Orientacao E") // Mensagem de debug
-                                sucessoDaInsercao = insereNavioSimples(tabuleiroHumano, coordenadasNum.first, coordenadasNum.second, posicao + 1)
+                                insereNavioSimples(tabuleiroHumano, coordenadasNum.first, coordenadasNum.second, posicao + 1)
                             }
 
                             else -> {
-                                println("Orientacao diferente de E") // Mensagem de debug
-                                sucessoDaInsercao = insereNavio(tabuleiroHumano, coordenadasNum.first, coordenadasNum.second, orientacao, posicao + 1)
+                                insereNavio(tabuleiroHumano, coordenadasNum.first, coordenadasNum.second, orientacao, posicao + 1)
                             }
                         }
-
-                        println("Sucesso da insercao: $sucessoDaInsercao") // Mensagem de debug
                     }
-                    println("Sucesso da insercao: $sucessoDaInsercao") // Mensagem de debug
                 }
                 mapaHumano = obtemMapa(tabuleiroHumano, true)
                 for (linha in mapaHumano) println(linha)
@@ -159,10 +152,7 @@ fun menuDefinirNavios(): Int {
                 println("!!!Resposta invalida, responda S ou N)")
                 resposta = null
             }
-
-            resposta == "S" -> {
-                for (linha in mapaComputador) println(linha)
-            }
+            resposta == "S" -> for (linha in mapaComputador) println(linha)
         }
     } while (resposta == null)
 
@@ -178,7 +168,7 @@ fun menuJogar(): Int {
             val mapaPalpitesHumano = obtemMapa(tabuleiroPalpitesDoHumano, false)
             for (linha in mapaPalpitesHumano) println(linha)
 
-            println("""Indique a posicao que quer atingir
+            println("""Indique a posição que pretende atingir
         |Coordenadas? (ex: 6,G)
     """.trimMargin())
 
@@ -193,23 +183,25 @@ fun menuJogar(): Int {
             } while (processaCoordenadas(tiro, numLinhas, numColunas) == null)
 
             val conversaoTiroHumano = processaCoordenadas(tiro, numLinhas, numColunas) ?: Pair(-1, -1)
-            println(">>>> HUMANO <<<< ${lancarTiro(tabuleiroComputador, tabuleiroPalpitesDoHumano, conversaoTiroHumano)}")
-
-            if (venceu(tabuleiroPalpitesDoHumano)) {
-                println("PARABENS! Venceu o jogo!")
-                do {
-                    println("Prima enter para voltar ao menu principal")
-                    val continua: String? = readlnOrNull()
-                    if (continua != null && continua != "") {
-                        if (continua.toIntOrNull() == -1) return MENU_PRINCIPAL
-                        if (continua.toIntOrNull() == 0) return SAIR
-                    }
-                } while (continua != "")
-                return MENU_PRINCIPAL
+            print(">>>> HUMANO <<<< ${lancarTiro(tabuleiroComputador, tabuleiroPalpitesDoHumano, conversaoTiroHumano)}")
+            if (navioCompleto(tabuleiroPalpitesDoHumano, conversaoTiroHumano.first-1, conversaoTiroHumano.second-1)){
+                println(" Navio ao fundo!")
             }
-                val tiroDoComputador = geraTiroComputador(tabuleiroPalpitesDoComputador)
-                println("Computador lancou tiro para a posicao $tiroDoComputador")
-                println(">>>> COMPUTADOR <<<< ${lancarTiro(tabuleiroHumano, tabuleiroPalpitesDoComputador, tiroDoComputador)}")
+                if (venceu(tabuleiroPalpitesDoHumano)) {
+                    println("PARABENS! Venceu o jogo!")
+                    do {
+                        println("Prima enter para voltar ao menu principal")
+                        val continua: String? = readlnOrNull()
+                        if (continua != null && continua != "") {
+                            if (continua.toIntOrNull() == -1) return MENU_PRINCIPAL
+                            if (continua.toIntOrNull() == 0) return SAIR
+                        }
+                    } while (continua != "")
+                    return MENU_PRINCIPAL
+                }
+            val tiroDoComputador = geraTiroComputador(tabuleiroPalpitesDoComputador)
+            println("Computador lancou tiro para a posicao $tiroDoComputador")
+            println(">>>> COMPUTADOR <<<< ${lancarTiro(tabuleiroHumano, tabuleiroPalpitesDoComputador, tiroDoComputador)}")
 
             if (venceu(tabuleiroPalpitesDoComputador)) {
                 println("OPS! O computador venceu o jogo!")
@@ -223,14 +215,14 @@ fun menuJogar(): Int {
                 } while (continua != "")
             }
 
-                do {
-                    println("Prima enter para continuar")
-                    val continua: String? = readlnOrNull()
-                } while (continua != "")
+            do {
+                println("Prima enter para continuar")
+                val continua: String? = readlnOrNull()
+            } while (continua != "")
         }
 
     } else {
-        println("!!!Tabuleiros por definir")
+        println("!!! Tem que primeiro definir o tabuleiro do jogo, tente novamente")
     }
     println()
     return MENU_PRINCIPAL
@@ -309,12 +301,6 @@ fun pedeColunas(): Int {
     return colunas
 }
 
-fun pedeCoordenadas(): String? {
-
-
-    val coordenada: String? = readlnOrNull()
-    return coordenada
-}
 
 fun processaCoordenadas(coordenadas: String?, numLinhas: Int, numColunas: Int): Pair<Int, Int>? {
 
@@ -581,7 +567,7 @@ fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: 
 }
 
 
-fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean {
+fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean { //recebe coordenadas matriz
 
     val posicaoAtingida = tabuleiroPalpites[linha][coluna]
     var coordenadasIguaisPosicaoAtingida = emptyArray<Pair<Int, Int>>()
@@ -593,15 +579,17 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
             val dimensaoMenos1 = posicaoAtingida.toString().toInt() - 1
 
             for (colunas in coluna - dimensaoMenos1..coluna + dimensaoMenos1) {
-                if (coordenadaContida(tabuleiroPalpites, linha, colunas)) {
-                    if (tabuleiroPalpites[linha - 1][colunas - 1] == posicaoAtingida) {
+                if (coordenadaContida(tabuleiroPalpites, linha + 1, colunas + 1)) {
+                    if (tabuleiroPalpites[linha][colunas] == posicaoAtingida &&
+                            Pair(linha, colunas) !in coordenadasIguaisPosicaoAtingida) {
                         coordenadasIguaisPosicaoAtingida += Pair(linha, colunas)
                     }
                 }
             }
             for (linhas in linha - dimensaoMenos1..linha + dimensaoMenos1) {
-                if (coordenadaContida(tabuleiroPalpites, linhas, coluna)) {
-                    if (tabuleiroPalpites[linhas - 1][coluna] == posicaoAtingida) {
+                if (coordenadaContida(tabuleiroPalpites, linhas + 1, coluna + 1)) {
+                    if (tabuleiroPalpites[linhas][coluna] == posicaoAtingida &&
+                            Pair(linhas, coluna) !in coordenadasIguaisPosicaoAtingida) {
                         coordenadasIguaisPosicaoAtingida += Pair(linhas, coluna)
                     }
 
@@ -638,7 +626,9 @@ fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Arra
                 'X' -> linhaDoMapa += " X |"
                 '1', '2', '3', '4' -> {
                     if (eTabuleiroReal) linhaDoMapa += " $valor |" else {
-                        if (navioCompleto(tabuleiroReal, linha, coluna)) linhaDoMapa += " $valor |" else {
+                        if (navioCompleto(tabuleiroReal, linha, coluna)) {
+                            linhaDoMapa += " $valor |"
+                        } else {
                             when (valor) {
                                 '2' -> linhaDoMapa += " $codAscii2 |"
                                 '3' -> linhaDoMapa += " $codAscii3 |"
@@ -740,12 +730,13 @@ fun venceu(tabuleiro: Array<Array<Char?>>): Boolean {
 fun lerJogo(nomeDoFicheiro: String, tipoDeTabuleiro: Int): Array<Array<Char?>> {
 
     val linhas = File("nomeDoFicheiro.csv").readLines()
-    val tabuleiro: Array<Array<Char?>> = emptyArray()
+    numLinhas = linhas[0][0].toString().toInt()
+    numColunas = linhas[0][2].toString().toInt()
+    val tabuleiro = criaTabuleiroVazio(numLinhas, numColunas)
 
     when (tipoDeTabuleiro) {
         1 -> {
-            for (numlinha in 5 until 5 + tabuleiroHumano.size) {
-
+            for (numlinha in 4 until 4 + tabuleiroHumano.size) {
 
             }
         }
