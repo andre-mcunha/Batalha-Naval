@@ -151,7 +151,6 @@ fun menuDefinirNavios(): Int {
                 println("!!!Resposta invalida, responda S ou N)")
                 resposta = null
             }
-
             resposta == "S" -> for (linha in mapaComputador) println(linha)
         }
     } while (resposta == null)
@@ -185,6 +184,7 @@ fun menuJogar(): Int {
             } while (processaCoordenadas(tiro, numLinhas, numColunas) == null)
 
             val conversaoTiroHumano = processaCoordenadas(tiro, numLinhas, numColunas) ?: Pair(-1, -1)
+
             print(">>> HUMANO >>>${lancarTiro(tabuleiroComputador, tabuleiroPalpitesDoHumano, conversaoTiroHumano)}")
             if (navioCompleto(tabuleiroPalpitesDoHumano, conversaoTiroHumano.first - 1, conversaoTiroHumano.second - 1)) {
                 println(" Navio ao fundo!")
@@ -228,7 +228,7 @@ fun menuJogar(): Int {
         }
 
     } else {
-        println("!!! Tem que primeiro definir o tabuleiro do jogo, tente novamente")
+        print("!!! Tem que primeiro definir o tabuleiro do jogo, tente novamente")
     }
     println()
     return MENU_PRINCIPAL
@@ -595,36 +595,40 @@ fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: 
 
 fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean { //recebe coordenadas matriz
 
-    val posicaoAtingida = tabuleiroPalpites[linha][coluna]
-    var coordenadasIguaisPosicaoAtingida = emptyArray<Pair<Int, Int>>()
+    if (coordenadaContida(tabuleiroPalpites,linha+1,coluna+1)) {
+        val posicaoAtingida = tabuleiroPalpites[linha][coluna]
+        var coordenadasIguaisPosicaoAtingida = emptyArray<Pair<Int, Int>>()
 
-    when (posicaoAtingida) {
-        null, 'X' -> return false
-        '1' -> return true
-        '2', '3', '4' -> {
-            val dimensaoMenos1 = posicaoAtingida.toString().toInt() - 1
+        when (posicaoAtingida) {
+            null, 'X' -> return false
+            '1' -> return true
+            '2', '3', '4' -> {
+                val dimensaoMenos1 = posicaoAtingida.toString().toInt() - 1
 
-            for (colunas in coluna - dimensaoMenos1..coluna + dimensaoMenos1) {
-                if (coordenadaContida(tabuleiroPalpites, linha + 1, colunas + 1)) {
-                    if (tabuleiroPalpites[linha][colunas] == posicaoAtingida &&
-                            Pair(linha, colunas) !in coordenadasIguaisPosicaoAtingida) {
-                        coordenadasIguaisPosicaoAtingida += Pair(linha, colunas)
+                for (colunas in coluna - dimensaoMenos1..coluna + dimensaoMenos1) {
+                    if (coordenadaContida(tabuleiroPalpites, linha + 1, colunas + 1)) {
+                        if (tabuleiroPalpites[linha][colunas] == posicaoAtingida &&
+                                Pair(linha, colunas) !in coordenadasIguaisPosicaoAtingida) {
+                            coordenadasIguaisPosicaoAtingida += Pair(linha, colunas)
+                        }
+                    }
+                }
+                for (linhas in linha - dimensaoMenos1..linha + dimensaoMenos1) {
+                    if (coordenadaContida(tabuleiroPalpites, linhas + 1, coluna + 1)) {
+                        if (tabuleiroPalpites[linhas][coluna] == posicaoAtingida &&
+                                Pair(linhas, coluna) !in coordenadasIguaisPosicaoAtingida) {
+                            coordenadasIguaisPosicaoAtingida += Pair(linhas, coluna)
+                        }
+
                     }
                 }
             }
-            for (linhas in linha - dimensaoMenos1..linha + dimensaoMenos1) {
-                if (coordenadaContida(tabuleiroPalpites, linhas + 1, coluna + 1)) {
-                    if (tabuleiroPalpites[linhas][coluna] == posicaoAtingida &&
-                            Pair(linhas, coluna) !in coordenadasIguaisPosicaoAtingida) {
-                        coordenadasIguaisPosicaoAtingida += Pair(linhas, coluna)
-                    }
 
-                }
-            }
         }
 
+        return coordenadasIguaisPosicaoAtingida.size == posicaoAtingida.toString().toInt()
     }
-    return coordenadasIguaisPosicaoAtingida.size == posicaoAtingida.toString().toInt()
+    return false
 }
 
 fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Array<String> {
@@ -674,7 +678,7 @@ fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Arra
 
 fun lancarTiro(tabuleiroReal: Array<Array<Char?>>, tabuleiroPalpites: Array<Array<Char?>>, linhaEColuna: Pair<Int, Int>): String {
 
-    var mensagem = ""
+    val mensagem: String
 
     when (tabuleiroReal[linhaEColuna.first - 1][linhaEColuna.second - 1]) {
         null -> {
