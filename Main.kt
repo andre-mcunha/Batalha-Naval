@@ -111,11 +111,11 @@ fun menuDefinirNavios(): Int {
                             if (coordenadas.toIntOrNull() == 0) return SAIR
                         }
                         val validadeDasCoordenadas = processaCoordenadas(coordenadas, numLinhas, numColunas)
-                                ?: Pair(-1, -1)
+                            ?: Pair(-1, -1)
                     } while (validadeDasCoordenadas == Pair(-1, -1))
 
                     val coordenadasNum = processaCoordenadas(coordenadas, numLinhas, numColunas)
-                            ?: Pair(-1, -1) // retorna um Pair em coordenadas normais
+                        ?: Pair(-1, -1) // retorna um Pair em coordenadas normais
 
                     if (posicao > 0) {
                         println("""Insira a orientacao do navio:
@@ -367,7 +367,7 @@ fun processaCoordenadas(coordenadas: String?, numLinhas: Int, numColunas: Int): 
                 else -> null
             }
 
-        }else return null
+        } else return null
 
     }
 }
@@ -571,7 +571,6 @@ fun insereNavio(tabuleiro: Array<Array<Char?>>, linha: Int, coluna: Int, orienta
     }
 }
 
-
 fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: Array<Int>): Array<Array<Char?>> {
 
     var sucessoInsercao: Boolean
@@ -596,13 +595,14 @@ fun preencheTabuleiroComputador(tabuleiro: Array<Array<Char?>>, numeroDeNavios: 
 }
 
 
+
 fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: Int): Boolean {
 
     var coordenadasIguaisPosicaoAtingida = emptyArray<Pair<Int, Int>>()
 
-    if(coordenadaContida(tabuleiroPalpites,linha,coluna)){
+    if (coordenadaContida(tabuleiroPalpites, linha, coluna)) {
 
-        when (val posicaoAtingida = tabuleiroPalpites[linha-1][coluna-1]) {
+        when (val posicaoAtingida = tabuleiroPalpites[linha - 1][coluna - 1]) {
             null, 'X' -> return false
             '1' -> return true
             '2', '3', '4' -> {
@@ -610,8 +610,8 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
 
                 for (colunas in coluna - dimensaoMenos1..coluna + dimensaoMenos1) {
                     if (coordenadaContida(tabuleiroPalpites, linha, colunas)) {
-                        if (tabuleiroPalpites[linha-1][colunas-1] == posicaoAtingida &&
-                                Pair(linha, colunas) !in coordenadasIguaisPosicaoAtingida) {
+                        if (tabuleiroPalpites[linha - 1][colunas - 1] == posicaoAtingida &&
+                            Pair(linha, colunas) !in coordenadasIguaisPosicaoAtingida) {
                             coordenadasIguaisPosicaoAtingida += Pair(linha, colunas)
                         }
                     }
@@ -620,8 +620,8 @@ fun navioCompleto(tabuleiroPalpites: Array<Array<Char?>>, linha: Int, coluna: In
 
                 for (linhas in linha - dimensaoMenos1..linha + dimensaoMenos1) {
                     if (coordenadaContida(tabuleiroPalpites, linhas, coluna)) {
-                        if (tabuleiroPalpites[linhas-1][coluna-1] == posicaoAtingida &&
-                                Pair(linhas, coluna) !in coordenadasIguaisPosicaoAtingida) {
+                        if (tabuleiroPalpites[linhas - 1][coluna - 1] == posicaoAtingida &&
+                            Pair(linhas, coluna) !in coordenadasIguaisPosicaoAtingida) {
                             coordenadasIguaisPosicaoAtingida += Pair(linhas, coluna)
                         }
 
@@ -655,10 +655,11 @@ fun obtemMapa(tabuleiroReal: Array<Array<Char?>>, eTabuleiroReal: Boolean): Arra
                 null -> {
                     linhaDoMapa += if (eTabuleiroReal) " ~ |" else " ? |"
                 }
+
                 'X' -> linhaDoMapa += " X |"
                 '1', '2', '3', '4' -> {
                     if (eTabuleiroReal) linhaDoMapa += " $valor |" else {
-                        if (navioCompleto(tabuleiroReal, linha+1, coluna+1)) {
+                        if (navioCompleto(tabuleiroReal, linha + 1, coluna + 1)) {
                             linhaDoMapa += " $valor |"
                         } else {
                             when (valor) {
@@ -735,7 +736,7 @@ fun contarNaviosDeDimensao(tabuleiro: Array<Array<Char?>>, dimensao: Int): Int {
     for (linha in 0 until tabuleiro.size) {
         for (coluna in 0 until tabuleiro[0].size) {
             if (tabuleiro[linha][coluna] == dimensao.toString().first()) {
-                if (navioCompleto(tabuleiro, linha+1, coluna+1)) count++
+                if (navioCompleto(tabuleiro, linha + 1, coluna + 1)) count++
             }
         }
     }
